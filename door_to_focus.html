@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171927">
+<title>DOOR TO FOCUS — учебная игра</title>
+<style>
+:root{
+  --bg:#171927;--panel:#222538;--panel2:#292d43;--text:#f5f2ed;--muted:#a9abc0;
+  --lav:#b9a7ff;--mint:#9fe0c8;--peach:#ffc49e;--line:rgba(255,255,255,.1);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,#353653 0%,var(--bg) 55%);color:var(--text);font-family:Inter,ui-rounded,system-ui,-apple-system,sans-serif}
+button{font:inherit;cursor:pointer;border:0}
+.app{width:min(100%,620px);margin:auto;padding:22px 17px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.brand{font-size:12px;letter-spacing:3px;font-weight:800;color:var(--lav)}
+.round-pill{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:8px 12px;border-radius:30px}
+h1{font-size:clamp(30px,8vw,43px);line-height:1.02;letter-spacing:-1.8px;margin:10px 0 12px}
+h2{font-size:24px;letter-spacing:-.7px;margin:0 0 8px}
+p{color:var(--muted);line-height:1.55;margin:0}
+.panel{background:linear-gradient(145deg,rgba(43,47,69,.96),rgba(31,34,51,.96));border:1px solid var(--line);border-radius:25px;padding:22px;box-shadow:0 18px 55px rgba(0,0,0,.18)}
+.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mint);font-weight:800;margin-bottom:10px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:22px 0}
+.level{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:14px 8px;color:var(--text);text-align:left;transition:.2s}
+.level.selected{border-color:var(--lav);background:rgba(185,167,255,.13);box-shadow:inset 0 0 0 1px var(--lav)}
+.level strong{display:block;font-size:15px;margin-bottom:5px}
+.level small{font-size:10px;color:var(--muted);line-height:1.35;display:block}
+.primary{width:100%;padding:16px 20px;border-radius:16px;background:var(--lav);color:#211d35;font-weight:850;box-shadow:0 8px 24px rgba(185,167,255,.18)}
+.primary:active,.secondary:active,.level:active,.door:active{transform:scale(.98)}
+.secondary{padding:13px 16px;border-radius:14px;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);font-weight:700}
+.door-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0}
+.door{min-height:190px;border-radius:19px;border:1px solid rgba(255,255,255,.12);color:var(--text);padding:13px 8px;background:linear-gradient(160deg,#444563,#292b43 65%,#202236);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:.18s}
+.door:before{content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.13);border-radius:13px;pointer-events:none}
+.door .num{font-size:10px;letter-spacing:2px;color:#c5c2dd}
+.door .emoji{font-size:38px;filter:drop-shadow(0 6px 10px #151626)}
+.door strong{font-size:13px}
+.door small{font-size:10px;color:#c0bfd0;text-align:center}
+.door:nth-child(2){background:linear-gradient(160deg,#38544f,#293d43 70%,#202b37)}
+.door:nth-child(3){background:linear-gradient(160deg,#604a50,#403347 70%,#28243a)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:15px;padding:13px}
+.stat span{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}
+.stat strong{font-size:19px}
+.timer{font-size:clamp(48px,13vw,70px);font-variant-numeric:tabular-nums;letter-spacing:-3px;font-weight:800;text-align:center;margin:22px 0 5px}
+.timer-label{text-align:center;color:var(--muted);font-size:12px}
+.progress{height:7px;border-radius:9px;background:rgba(255,255,255,.09);overflow:hidden;margin:22px 0}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lav),var(--mint));border-radius:9px;transition:width .3s}
+.actions{display:flex;gap:9px;margin-top:20px}
+.actions>*{flex:1}
+.note{font-size:12px;margin-top:16px;color:var(--muted)}
+.task-box{background:rgba(185,167,255,.1);border:1px solid rgba(185,167,255,.2);padding:16px;border-radius:16px;margin:18px 0}
+.task-box strong{display:block;margin-bottom:6px}
+.hidden{display:none!important}
+.footer{text-align:center;color:#777b96;font-size:10px;margin-top:25px;letter-spacing:.5px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:#f5f2ed;color:#242438;padding:12px 17px;border-radius:30px;font-size:13px;font-weight:750;transition:.25s;z-index:5;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:370px){.door{min-height:165px}.door .emoji{font-size:31px}.door strong{font-size:12px}.panel{padding:18px}.app{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top"><div class="brand">✦ DOOR TO FOCUS</div><div class="round-pill" id="roundPill">ПОДГОТОВКА</div></header>
+
+  <section id="startScreen" class="panel">
+    <div class="eyebrow">Твоя учебная миссия</div>
+    <h1>За какой<br>дверью фокус?</h1>
+    <p>Выбирай дверь вслепую. За ней может быть учебный блок, перерыв или особая миссия. А где-то дальше спрятан выход.</p>
+    <div class="eyebrow" style="margin-top:25px">Выбери сложность</div>
+    <div class="levels">
+      <button class="level selected" data-level="easy"><strong>Лёгкий</strong><small>15–60 мин<br>короткие паузы</small></button>
+      <button class="level" data-level="medium"><strong>Средний</strong><small>30–90 мин<br>средние паузы</small></button>
+      <button class="level" data-level="hard"><strong>Хард</strong><small>60–180 мин<br>длиннее паузы</small></button>
+    </div>
+    <button class="primary" id="startBtn">Открыть первую комнату →</button>
+    <p class="note">Выход не появится раньше третьего раунда. Можно завершить игру раньше только после появления двери выхода.</p>
+  </section>
+
+  <section id="gameScreen" class="hidden">
+    <div class="stats">
+      <div class="stat"><span>НАКОПЛЕНО ПЕРЕРЫВОВ</span><strong id="bank">0 мин</strong></div>
+      <div class="stat"><span>УЖЕ ПРОЙДЕНО</span><strong id="completed">0 раундов</strong></div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow" id="roundLabel">Раунд 1</div>
+      <h2>Три двери. Один выбор.</h2>
+      <p id="doorHint">Выбери одну дверь — содержимое остальных останется тайной.</p>
+      <div class="door-grid" id="doorGrid">
+        <button class="door" data-door="0"><span class="num">ДВЕРЬ 01</span><span class="emoji">🚪</span><strong>Открыть</strong><small>Что внутри?</small></button>
+        <button class="door" data-door="1"><span class="num">ДВЕРЬ 02</span><span class="emoji">🚪</span><strong>Открыть</strong><small>Что внутри?</small></button>
+        <button class="door" data-door="2"><span class="num">ДВЕРЬ 03</span><span class="emoji">🚪</span><strong>Открыть</strong><small>Что внутри?</small></button>
+      </div>
+      <div class="note">Подсказка: порядок содержимого меняется в каждом раунде.</div>
+    </div>
+  </section>
+
+  <section id="eventScreen" class="panel hidden">
+    <div class="eyebrow" id="eventType">Найдено за дверью</div>
+    <h2 id="eventTitle">Учебный блок</h2>
+    <p id="eventDesc"></p>
+    <div class="task-box hidden" id="missionBox"><strong id="missionName"></strong><p id="missionDesc"></p></div>
+    <div class="timer" id="timer">00:00</div>
+    <div class="timer-label" id="timerLabel">ТАЙМЕР ГОТОВ</div>
+    <div class="progress"><i id="progressBar"></i></div>
+    <div class="actions" id="eventActions"></div>
+    <p class="note" id="eventNote"></p>
+  </section>
+
+  <section id="endScreen" class="panel hidden">
+    <div class="eyebrow">Миссия завершена</div>
+    <h1>Ты прошла<br>все двери. ✨</h1>
+    <p id="endText">Учебный забег окончен. Хорошая работа!</p>
+    <div class="stats">
+      <div class="stat"><span>РАУНДОВ ПРОЙДЕНО</span><strong id="endRounds">0</strong></div>
+      <div class="stat"><span>УЧЕБНОЕ ВРЕМЯ</span><strong id="endStudy">0 мин</strong></div>
+    </div>
+    <button class="primary" id="restartBtn">Начать заново</button>
+  </section>
+  <div class="footer">МАЛЕНЬКИЕ ШАГИ · БОЛЬШОЙ ФОКУС</div>
+</main>
+<div id="toast"></div>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const screens = ['startScreen','gameScreen','eventScreen','endScreen'];
+const ranges = {
+ easy:{study:[15,60],pause:[5,10],mission:[10,20]},
+ medium:{study:[30,90],pause:[10,20],mission:[15,30]},
+ hard:{study:[60,180],pause:[15,30],mission:[20,40]}
+};
+const missions = [
+ ['🧠 Проверка памяти','Повтори материал без подсказок: выпиши всё, что помнишь, а затем сверься с конспектом.'],
+ ['📚 Спринт по заданиям','Реши несколько заданий по выбранному предмету. Главное — не переключаться между темами.'],
+ ['🗣️ Активное повторение','Объясни тему вслух так, будто учишь человека, который видит её впервые.'],
+ ['✍️ Мини-конспект','Собери главные правила и формулы темы на одной странице.'],
+ ['🔎 Найди пробел','Выбери один непонятный момент и разбери его до ясного объяснения.']
+];
+let level='easy', round=1, bank=0, completed=0, studySeconds=0, totalStudy=0;
+let current=null, interval=null, remaining=0, duration=0, running=false, selectedDoor=null;
+
+function showScreen(name){screens.forEach(s=>$(s).classList.toggle('hidden',s!==name));}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function fmt(sec){const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300);}
+function updateStats(){$('bank').textContent=bank+' мин';$('completed').textContent=completed+' раундов';$('roundPill').textContent='РАУНД '+round;}
+function clearTimer(){if(interval)clearInterval(interval);interval=null;running=false;}
+function setButtons(buttons){$('eventActions').innerHTML='';buttons.forEach(b=>{const el=document.createElement('button');el.className=b.primary?'primary':'secondary';el.textContent=b.text;el.onclick=b.fn;$('eventActions').appendChild(el);});}
+function begin(){
+ round=1;bank=0;completed=0;totalStudy=0;clearTimer();updateStats();showScreen('gameScreen');newRound();
+}
+document.querySelectorAll('.level').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.level').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');level=btn.dataset.level;
+}));
+$('startBtn').onclick=begin;$('restartBtn').onclick=()=>showScreen('startScreen');
+
+function newRound(){
+ clearTimer();current=null;updateStats();$('roundLabel').textContent='Раунд '+round;
+ $('doorHint').textContent=round<3?'Выбери одну дверь — содержимое остальных останется тайной.':'Выход уже может быть среди дверей. Рискнёшь?';
+ const events=['study','break','mission'];
+ if(round>=3 && Math.random()<Math.min(.22+(round-3)*.08,.55)){
+   events[rand(0,2)]='exit';
+ } 
+ // Не допускаем более одной двери выхода.
+ const shuffled=events.sort(()=>Math.random()-.5);
+ document.querySelectorAll('.door').forEach((door,i)=>{
+   door.dataset.type=shuffled[i];door.disabled=false;
+   door.innerHTML=`<span class="num">ДВЕРЬ 0${i+1}</span><span class="emoji">🚪</span><strong>Открыть</strong><small>Что внутри?</small>`;
+   door.onclick=()=>openDoor(i,shuffled[i]);
+ });
+ showScreen('gameScreen');
+}
+function openDoor(index,type){
+ document.querySelectorAll('.door').forEach(d=>d.disabled=true);
+ selectedDoor=index;current=type;
+ if(type==='study')showStudy();
+ if(type==='break')showBreak();
+ if(type==='mission')showMission();
+ if(type==='exit')showExit();
+}
+function startEvent(type,minutes){
+ duration=minutes*60;remaining=duration;running=true;
+ $('timer').textContent=fmt(remaining);$('timerLabel').textContent='ТАЙМЕР ИДЁТ';
+ $('progressBar').style.width='0%';
+ clearTimer();
+ running=true;
+ interval=setInterval(()=>{
+   if(!running)return;
+   remaining=Math.max(0,remaining-1);$('timer').textContent=fmt(remaining);
+   $('progressBar').style.width=((duration-remaining)/duration*100)+'%';
+   if(remaining<=0)finishTimer(type);
+ },1000);
+}
+function finishTimer(type){
+ clearTimer();$('timer').textContent='00:00';$('timerLabel').textContent='ВРЕМЯ ВЫШЛО';
+ if(type==='study'||type==='mission'){totalStudy+=duration;toast('Отлично! Время выполнено.');}
+ else toast('Перерыв завершён. Возвращаемся?');
+ setButtons([{text:'Следующий раунд →',primary:true,fn:nextRound}]);
+ $('eventNote').textContent='Раунд засчитан. Можно двигаться дальше.';
+}
+function showStudy(){
+ const m=rand(...ranges[level].study);
+ $('eventType').textContent='📖 Учебная комната';$('eventTitle').textContent=m+' минут фокуса';
+ $('eventDesc').textContent='Время для одного предмета. Убери лишние вкладки и сосредоточься на конкретной задаче.';
+ $('missionBox').classList.add('hidden');$('eventNote').textContent='Таймер можно поставить на паузу. После завершения откроется следующий раунд.';
+ $('timer').textContent=fmt(m*60);$('timerLabel').textContent='ГОТОВНОСТЬ К УЧЁБЕ';
+ setButtons([{text:'Начать учиться',primary:true,fn:()=>{startEvent('study',m);setButtons([{text:'Пауза',fn:pauseTimer},{text:'Завершить блок',fn:()=>finishEarly('study')}]);} }]);
+ showScreen('eventScreen');
+}
+function showBreak(){
+ const m=rand(...ranges[level].pause);
+ $('eventType').textContent='☕ Комната отдыха';$('eventTitle').textContent='Перерыв: '+m+' минут';
+ $('eventDesc').textContent='Можно отдохнуть сейчас или отложить это время. Отложенные минуты складываются в общий запас.';
+ $('missionBox').classList.add('hidden');$('eventNote').textContent='Накопленные минуты не пропадают — их можно использовать в любой момент.';
+ $('timer').textContent=fmt(m*60);$('timerLabel').textContent='ВЫБЕРИ, КАК ПОСТУПИТЬ';
+ setButtons([
+  {text:'Отдохнуть сейчас',primary:true,fn:()=>{startEvent('break',m);setButtons([{text:'Пауза',fn:pauseTimer},{text:'Закончить перерыв',fn:()=>finishEarly('break')}]);}},
+  {text:'Отложить +'+m+' мин',fn:()=>{bank+=m;toast('В запас добавлено '+m+' минут');updateStats();nextRound();}}
+ ]);
+ showScreen('eventScreen');
+}
+function showMission(){
+ const m=rand(...ranges[level].mission),task=missions[rand(0,missions.length-1)];
+ $('eventType').textContent='🎯 Особая миссия';$('eventTitle').textContent='Испытание фокуса';
+ $('eventDesc').textContent='Третья дверь — не обычный учебный блок. Выполни особое задание на время.';
+ $('missionBox').classList.remove('hidden');$('missionName').textContent=task[0];$('missionDesc').textContent=task[1];
+ $('timer').textContent=fmt(m*60);$('timerLabel').textContent='ВРЕМЯ НА МИССИЮ';$('eventNote').textContent='Миссия засчитывается как учебное время.';
+ setButtons([{text:'Принять миссию',primary:true,fn:()=>{startEvent('mission',m);setButtons([{text:'Пауза',fn:pauseTimer},{text:'Миссия выполнена',fn:()=>finishEarly('mission')}]);}}]);
+ showScreen('eventScreen');
+}
+function showExit(){
+ clearTimer();$('eventType').textContent='🚪 Секретная дверь';$('eventTitle').textContent='Ты нашла выход!';
+ $('eventDesc').textContent='Учебный забег окончен. На сегодня можно остановиться — дверь открыта.';
+ $('missionBox').classList.add('hidden');$('timer').textContent='✦';$('timerLabel').textContent='МАРШРУТ ЗАВЕРШЁН';$('progressBar').style.width='100%';
+ $('eventNote').textContent='Выход появляется случайно начиная с третьего раунда.';
+ setButtons([{text:'Завершить игру',primary:true,fn:endGame},{text:'Остаться и продолжить',fn:nextRound}]);
+ showScreen('eventScreen');
+}
+function pauseTimer(){
+ if(!interval)return;
+ running=!running;
+ const btn=$('eventActions').querySelector('button');
+ if(btn)btn.textContent=running?'Пауза':'Продолжить';
+ $('timerLabel').textContent=running?'ТАЙМЕР ИДЁТ':'ТАЙМЕР НА ПАУЗЕ';
+}
+function finishEarly(type){
+ if(type==='study'||type==='mission'){totalStudy+=duration-remaining;}
+ clearTimer();$('timerLabel').textContent='БЛОК ЗАВЕРШЁН';$('progressBar').style.width=((duration-remaining)/duration*100)+'%';
+ toast('Блок завершён. Можно идти дальше.');setButtons([{text:'Следующий раунд →',primary:true,fn:nextRound}]);
+}
+function nextRound(){completed++;round++;newRound();}
+function endGame(){
+ clearTimer();$('endRounds').textContent=completed+' + финал';$('endStudy').textContent=Math.round(totalStudy/60)+' мин';
+ $('endText').textContent='Ты завершила учебный забег на уровне «'+({easy:'Лёгкий',medium:'Средний',hard:'Хард'}[level])+'». Не забудь использовать накопленные перерывы, если они остались: '+bank+' мин.';
+ showScreen('endScreen');
+}
+})();
+</script>
+</body>
+</html>
