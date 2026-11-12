@@ -51,7 +51,7 @@ button,input,select{font:inherit}button{cursor:pointer;border:0;color:inherit}.a
 <div class="footer">МАЛЕНЬКИЕ ШАГИ · БОЛЬШОЙ ФОКУС</div></main><div id="toast"></div>
 <script>
 (()=>{'use strict';
-const $=id=>document.getElementById(id),screens=['lobbyScreen','setupScreen','gameScreen','eventScreen','resultScreen','endScreen'];
+const $=id=>document.getElementById(id),screens=['lobbyScreen','musicScreen','setupScreen','gameScreen','eventScreen','resultScreen','endScreen'];
 const ranges={easy:{study:[15,60],pause:[5,10],mission:[10,20]},medium:{study:[30,90],pause:[10,20],mission:[15,30]},hard:{study:[60,180],pause:[15,30],mission:[20,40]}};
 const missions=[['🧠 Проверка памяти','Повтори материал без подсказок: выпиши всё, что помнишь, а затем сверься с конспектом.'],['📚 Спринт по заданиям','Реши несколько заданий по выбранному предмету. Главное — не переключаться между темами.'],['🗣️ Активное повторение','Объясни тему вслух так, будто учишь человека, который видит её впервые.'],['✍️ Мини-конспект','Собери главные правила и формулы темы на одной странице.'],['🔎 Найди пробел','Выбери один непонятный момент и разбери его до ясного объяснения.']];
 const achievements=[['firstHour','🌱 Первые шаги','Накопить 1 час учёбы'],['fiveHours','📚 В ритме','Накопить 5 часов учёбы'],['tenWins','🏆 Исследователь','Завершить 10 раундов победой'],['hardWin','💎 Хардкор','Успешно завершить учебный блок в HARD MODE'],['sevenDays','✨ Постоянство','Заниматься 7 разных дней']];
